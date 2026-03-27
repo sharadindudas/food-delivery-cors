@@ -23,10 +23,18 @@ app.use(
     pathRewrite: {
       "^/api/proxy/swiggy": ""
     },
-    onProxyReq: (proxyReq) => {
+    onProxyReq: (proxyReq, req) => {
       proxyReq.setHeader("User-Agent", "Mozilla/5.0");
       proxyReq.setHeader("Referer", "https://www.swiggy.com/");
       proxyReq.setHeader("Origin", "https://www.swiggy.com");
+
+      if (req.body && Object.keys(req.body).length) {
+        const bodyData = JSON.stringify(req.body);
+
+        proxyReq.setHeader("Content-Type", "application/json");
+        proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
     },
     onProxyRes: (proxyRes, req, res) => {
       delete proxyRes.headers["access-control-allow-origin"];
